@@ -8,9 +8,18 @@ url =  "https://animekisa.tv/monster-episode-2"
 url = "https://animekisa.tv/monster-dubbed-episode-36"
 # url = "https://animekisa.tv/one-piece-episode-976"
 
+requests = requests.session()
+
 
 def getSoup(url):
 	res = requests.get(url)
+	return BeautifulSoup(res.content,'html.parser')
+
+def postSoup(url,data):
+	headers = {
+		"User-Agent":"Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:89.0) Gecko/20100101 Firefox/89.0"
+	}
+	res = requests.post(url,data=data,headers=headers)
 	return BeautifulSoup(res.content,'html.parser')
 
 def vidstreamingUrl(url):
@@ -71,7 +80,35 @@ def dlFromStreamSbPart1(url):
 				return f"https://sbvideo.net/dl?op=download_orig&id={onclickTxt[0]}&mode={onclickTxt[1]}&hash={onclickTxt[2]}"
 	
 
+def dlFromMp4uploadPart1(url):
+
+	print("downloading from mp4upload is not supported yet. change priority in conf.py ")
+	exit()
+	soup = getSoup(url)
+	form = soup.find('form',{'id':'form'})
+	print(form)
+	data = {
+		'op':'download2',
+		# 'op':form.find('input',{'name':'op'})['value'],
+		'usr_login':form.find('input',{'name':'usr_login'})['value'],
+		'id':form.find('input',{'name':'id'})['value'],
+		'fname':form.find('input',{'name':'fname'})['value'],
+		# 'referer':form.find('input',{'name':'referer'})['value'],
+		'referer':url,
+		'method_free':form.find('input',{'name':'method_free'})['value'],
+	}
+	postdata = f"op=download2&id={data['id']}&rand=&referer={url}&method_free=+&method_premium="
+	# soup = postSoup(url,data).find('form')
+	# print("form data\n\n\n\n",soup)
+	os.system(f"wget --post-data '{postdata}' {url}")
+	exit()
+
+	
+
+
+
 def iTakeVideoUrlAndDownload(url):
+	#  give me url containing video
 	url2,title,site,redirect = chooseFromVidStream(url)
 	if not redirect:
 		print('downloading directly')
@@ -89,6 +126,12 @@ def iTakeVideoUrlAndDownload(url):
 				span = getSoup(lastStreamSbUrl).find('span').a['href']
 			
 			download(span,title)
+		if "mp4upload" in site:
+			# code above here is okay
+			dlFromMp4uploadPart1(url2)
+
+
+			
 
 
 def fromTo(max):
@@ -153,7 +196,36 @@ def search():
 	return animeWebsite + availableAnime[2*userChoice1-1][userChoice2-1][1]
 
 	
+def downloadAllEpisodes(soup):
+	# soup contains all anchors with links to the videos
+	soup = soup[::-1] # first element is latest episode we need to download from episode 1
+	for a in soup:
+		iTakeVideoUrlAndDownload(animeWebsite + a['href'])
 
+
+def findLinkFromEpisodeNo(episode,soup,frontUrl):
+	# return link of the episode
+	# takes episode to download and soup containing episodes
+	# frontUrl is just to show user if episode is missing or not found
+	for a in soup:
+		cv = a.findAll('div',{'class':'centerv'})
+		if int(cv[1].string) == episode:
+			return animeWebsite+a['href']
+	print("Oops episode seems to be missing..")
+	print("check if the episode is present browser or click",frontUrl)
+
+def downloadFromTo(fromEp,toEp,soup,frontUrl):
+	if fromEp>toEp:
+		print(f"Order Incorrect... starting episdoe {fromEp} greater than end episode {toEp}")
+		return
+	elif fromEp == toEp:
+		link = findLinkFromEpisodeNo(fromEp,soup,frontUrl)
+		iTakeVideoUrlAndDownload(link)
+	else:
+		soup = soup[::-1]
+		for ep in range(fromEp,toEp+1):
+			link = findLinkFromEpisodeNo(ep,soup,frontUrl)
+			iTakeVideoUrlAndDownload(link)
 
 
 
@@ -163,6 +235,27 @@ soup = getSoup(frontUrl).find('div',{'class':'infoepbox'}).findAll('a')
 # print(type(soup))
 totalEps = soup[0].find('div',{'class':'infoept2'}).div.string
 
-print(f'{totalEps} available')
+print(f'{totalEps} episodes available')
+
+print("1. Download all episodes\n2. Download single episode\n2. From ep x to y")
+userChoice = askForNumber(3)
+if userChoice == 1:
+	downloadAllEpisodes(soup)
+elif userChoice == 2:
+	episode = askForNumber(len(soup))
+	link = findLinkFromEpisodeNo(episode,soup,frontUrl)
+	iTakeVideoUrlAndDownload(link)
+else:
+	print("From : ",end="")
+	fromEp = askForNumber(len(soup))
+	print("To : ",end="")
+	toEp = askForNumber(len(soup))
+
+	downloadFromTo(fromEp,toEp,soup,frontUrl)
 
 
+
+
+
+
+ 
