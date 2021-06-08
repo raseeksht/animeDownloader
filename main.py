@@ -237,7 +237,7 @@ totalEps = soup[0].find('div',{'class':'infoept2'}).div.string
 
 print(f'{totalEps} episodes available')
 
-print("1. Download all episodes\n2. Download single episode\n2. From ep x to y")
+print("1. Download all episodes\n2. Download single episode\n3. From ep x to y\n")
 userChoice = askForNumber(3)
 if userChoice == 1:
 	downloadAllEpisodes(soup)
