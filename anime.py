@@ -98,7 +98,7 @@ class Animeweb():
 		# vidsUrl  = self.vidstreamingUrl(url)	# site that contains many sites to choose
 		gogostream = self.getSoup(url) 
 		# gogostream = self.getSoup(vidsUrl) 
-		title = gogostream.find('span',id="title").string.replace(" ","_").replace('(','[').replace(')',']')
+		title = gogostream.find('span',id="title").string.replace(" "," ").replace('(','[').replace(')',']')
 
 		mirrorLinks = gogostream.findAll('div',{'class':"mirror_link"})
 		# there  are "two" class mirror_link
@@ -162,7 +162,7 @@ class Animekisa(Animeweb):
 			vidsUrl  = self.vidstreamingUrl(self.homeUrl + a['href'])
 			self.iTakeVideoUrlAndDownload(vidsUrl)
 
-	def howDoYouWantToDownload(self,soup):
+	def howDoYouWantToDownload(self,soup,animeHomePageUrl):
 		'''gives user the  choice to download howevver they like'''
 		print("1. Download all episodes\n2. Download single episode\n3. From ep x to y\n")
 		userChoice = self.askForNumber(3)
@@ -232,7 +232,7 @@ class Animekisa(Animeweb):
 		totalEps = soup[0].find('div',{'class':'infoept2'}).div.string
 		print(f'{totalEps} episodes available')
 
-		self.howDoYouWantToDownload(soup)
+		self.howDoYouWantToDownload(soup,animeHomePageUrl)
 			
 
 class Animixplay(Animeweb):
