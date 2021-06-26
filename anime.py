@@ -41,7 +41,7 @@ class Color:
 		self.green = '\u001b[32m'
 		self.yellow = '\u001b[33m'
 		self.blue = '\u001b[34m'
-		self.magenta = '\u001b[35m'
+		self.magentfa = '\u001b[35m'
 		self.cyan = '\u001b[36m'
 		self.white = '\u001b[37m'
 
@@ -135,6 +135,7 @@ class Animeweb():
 		""" works for animekisa """
 		# takes one parameter url  from where video iiss to be downloaded
 		# vidsUrl  = self.vidstreamingUrl(url)	# site that contains many sites to choose
+		url = "https://gogo-stream.com/download?id=" + url.split("?id=")[-1] # avoid human vverificaatiion on otherr siites
 		gogostream = self.getSoup(url) 
 		# gogostream = self.getSoup(vidsUrl) 
 
@@ -221,7 +222,7 @@ class Animekisa(Animeweb):
 		if userChoice == 1:
 			self.downloadAllEpisodes(soup)
 		elif userChoice == 2:
-			episode = self.askForNumber(len(soup),datatype="float")
+			episode = self.askForNumber(len(soup))
 			link = self.findLinkFromEpisodeNo(episode,soup,animeHomePageUrl)
 			# print(link)
 			vidsUrl  = self.vidstreamingUrl(link)
@@ -334,6 +335,8 @@ class Animixplay(Animeweb):
 		print("1. Download all episodes\n2. Download single episode\n3. From ep x to y\n")
 		userChoice = self.askForNumber(3)
 		if userChoice == 1:
+			with open("log.txt","w") as f:
+				f.write(json.dumps(epdict,indent=4))
 			self.downloadAllEpisodes(epdict)
 		elif userChoice == 2:
 			episode = self.askForNumber(totalEpisodesAvaiable)
