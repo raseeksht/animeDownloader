@@ -2,6 +2,15 @@ import requests
 from bs4 import BeautifulSoup
 import os,re,json,sys,time
 import conf
+import cloudscraper
+
+scraper = cloudscraper.create_scraper(
+	browser={
+		'browser': 'firefox',
+		'platform': 'windows',
+		'mobile': False
+	}
+)
 
 platform = sys.platform
 
@@ -128,7 +137,9 @@ class Animeweb():
 				print("alphabets and special symbol are not accepted...")
 	
 	def getSoup(self,url):
-		res = requests.get(url)
+		# res = requests.get(url)
+		res = scraper.get(url)
+		
 		return BeautifulSoup(res.content,'html.parser')
 	
 	def chooseFromVidStream(self,url):
@@ -315,6 +326,7 @@ class Animixplay(Animeweb):
 		# individual animeHomePgeUrl of animixplay
 		streamaniBaseUrl = "https://streamani.net/download?id="
 		soup = self.getSoup(animeHomePageUrl).find('div',{'id':'epslistplace'})
+		print(soup)
 		episodesDetails = json.loads(soup.string)
 		totalEpisodesAvaiable = episodesDetails['eptotal']
 		epdict = {}
